@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0a0b12" />
+  <title>مَدَارنا | Our Little Orbit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #f8f4ed;
+      --muted: #a8abb8;
+      --night: #0a0b12;
+      --night-2: #111522;
+      --line: rgba(248, 244, 237, .14);
+      --coral: #63b7ff;
+      --coral-soft: #b4e5ff;
+      --sky: #8fd8ff;
+      --paper: #f8f4ed;
+      --shadow: 0 24px 80px rgba(0,0,0,.34);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--night); }
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--ink);
+      background: var(--night);
+      font-family: "IBM Plex Sans Arabic", system-ui, sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    body::selection { background: var(--coral); color: var(--night); }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+
+    .sky-layer, .grain-layer { position: fixed; inset: 0; pointer-events: none; }
+    #sky { z-index: 0; opacity: .85; }
+    .grain-layer {
+      z-index: 1;
+      opacity: .07;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.36'/%3E%3C/svg%3E");
+      mix-blend-mode: soft-light;
+    }
+    .site-shell { position: relative; z-index: 2; }
+    main { padding-bottom: 94px; }
+
+    .nav {
+      position: fixed;
+      inset: 18px 4vw auto;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 11px 14px 11px 18px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(10, 11, 18, .64);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 10px 40px rgba(0,0,0,.16);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-size: .78rem; font-weight: 800; letter-spacing: 0; white-space: nowrap; }
+    .brand-mark {
+      display: grid; place-items: center; width: 31px; height: 31px;
+      border: 1px solid rgba(255, 176, 158, .7); border-radius: 50%;
+      color: var(--coral-soft); font-family: "Space Grotesk", sans-serif; font-size: 1.1rem;
+    }
+    .nav-links { display: flex; align-items: center; gap: 4px; margin-inline: auto; }
+    .nav-links a, .language-toggle {
+      border: 0; background: transparent; color: var(--muted); font-size: .73rem;
+      padding: 7px 11px; border-radius: 999px; transition: color .25s, background .25s;
+    }
+    .nav-links a:hover, .nav-links a.active, .language-toggle:hover { color: var(--ink); background: rgba(255,255,255,.08); }
+    .language-toggle { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); color: var(--sky); }
+    .language-toggle .lang-ar { display: inline; }
+    .language-toggle .lang-en { display: none; }
+    body.english { direction: ltr; }
+    body.english .language-toggle .lang-ar { display: none; }
+    body.english .language-toggle .lang-en { display: inline; }
+    body.english [data-ar]::after { content: attr(data-en); }
+    body.english [data-ar] { font-size: 0; }
+    body.english [data-ar]::after { font-size: inherit; }
+    body.english .eyebrow[data-ar]::after, body.english .micro[data-ar]::after, body.english .nav-links [data-ar]::after { font-size: .72rem; }
+    body.english .display[data-ar]::after { font-size: clamp(3.2rem, 8vw, 7.8rem); }
+    body.english .quote[data-ar]::after { font-size: clamp(2rem, 4.5vw, 4rem); }
+
+    .section { width: min(1200px, calc(100% - 9vw)); margin: 0 auto; position: relative; }
+    .hero { min-height: 100svh; display: grid; align-items: center; padding: 150px 0 90px; }
+    .hero-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(340px, .9fr); gap: clamp(36px, 7vw, 120px); align-items: center; }
+    .eyebrow { display: flex; align-items: center; gap: 11px; color: var(--sky); font-size: .75rem; font-weight: 700; letter-spacing: 0; text-transform: uppercase; }
+    .eyebrow::before { content: ""; width: 36px; height: 1px; background: var(--coral); }
+    .hero h1 { max-width: 760px; margin: 25px 0 28px; font-size: clamp(2.9rem, 7vw, 6.8rem); line-height: 1.16; letter-spacing: 0; font-weight: 700; overflow-wrap: anywhere; }
+    .hero h1 em { color: var(--coral-soft); font-family: inherit; font-weight: 700; font-style: normal; letter-spacing: 0; }
+    .hero-lede { max-width: 490px; color: var(--muted); font-size: clamp(1rem, 1.8vw, 1.2rem); line-height: 2; margin: 0 0 30px; }
+    .typed-line { min-height: 3.2em; max-width: 580px; color: var(--paper); font-family: "IBM Plex Sans Arabic", system-ui, sans-serif; font-size: clamp(1.18rem, 2.1vw, 1.8rem); font-style: normal; line-height: 1.75; }
+    .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 13px; margin-top: 28px; }
+    .primary-btn, .ghost-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px;
+      border-radius: 999px; padding: 0 20px; transition: transform .25s, box-shadow .25s, background .25s;
+    }
+    .primary-btn { border: 1px solid var(--coral); color: var(--night); background: var(--coral); font-weight: 800; box-shadow: 0 9px 30px rgba(99,183,255,.2); }
+    .primary-btn:hover { transform: translateY(-3px); box-shadow: 0 14px 34px rgba(99,183,255,.32); }
+    .ghost-btn { border: 1px solid var(--line); color: var(--ink); background: rgba(255,255,255,.045); }
+    .ghost-btn:hover { transform: translateY(-3px); border-color: rgba(167,233,236,.7); background: rgba(167,233,236,.08); }
+    .tiny-note { margin-top: 17px; color: #777c8c; font-size: .7rem; }
+
+    .orbit-scene { position: relative; min-height: 520px; display: grid; place-items: center; isolation: isolate; }
+    .orbit-scene::before { content: ""; position: absolute; width: 74%; aspect-ratio: 1; border: 1px solid rgba(167,233,236,.15); border-radius: 50%; transform: rotate(-18deg) scaleY(.52); box-shadow: 0 0 90px rgba(167,233,236,.08); }
+    .orbit-scene::after { content: ""; position: absolute; width: 58%; aspect-ratio: 1; border: 1px solid rgba(99,183,255,.32); border-radius: 50%; transform: rotate(24deg) scaleY(.42); }
+    .portrait-orbit { position: relative; z-index: 2; width: min(330px, 75vw); aspect-ratio: 1; border: 1px solid rgba(255,255,255,.35); border-radius: 50%; padding: 14px; background: rgba(255,255,255,.06); box-shadow: 0 0 90px rgba(99,183,255,.18), inset 0 0 42px rgba(143,216,255,.1); animation: drift 8s ease-in-out infinite; }
+    .portrait-orbit img { width: 100%; height: 100%; object-fit: cover; object-position: center; border-radius: 50%; }
+    .orbit-label { position: absolute; z-index: 4; right: 1%; top: 13%; display: grid; gap: 4px; padding: 13px 16px; border: 1px solid var(--line); background: rgba(10,11,18,.68); backdrop-filter: blur(12px); }
+    .orbit-label strong { color: var(--coral-soft); font-size: .72rem; letter-spacing: 0; }
+    .orbit-label span { color: var(--muted); font-size: .68rem; }
+    .orbit-stamp { position: absolute; z-index: 4; bottom: 10%; left: 6%; display: grid; gap: 2px; color: var(--sky); font-size: .66rem; letter-spacing: 0; text-transform: uppercase; }
+    .orbit-stamp b { color: var(--ink); font-size: 1rem; letter-spacing: 0; text-transform: none; }
+    .orbit-dot { position: absolute; z-index: 3; width: 10px; height: 10px; border-radius: 50%; background: var(--coral); box-shadow: 0 0 0 8px rgba(99,183,255,.1), 0 0 30px var(--coral); }
+    .dot-a { top: 20%; left: 20%; } .dot-b { bottom: 19%; right: 16%; background: var(--sky); box-shadow: 0 0 0 8px rgba(167,233,236,.1), 0 0 30px var(--sky); }
+    @keyframes drift { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-13px) rotate(2deg); } }
+    .scroll-cue { position: absolute; bottom: 28px; left: 50%; translate: -50% 0; display: flex; align-items: center; gap: 10px; color: #7c8190; font-size: .68rem; letter-spacing: 0; text-transform: uppercase; }
+    .scroll-cue span { display: block; width: 33px; height: 1px; background: var(--line); }
+
+    .section-header { display: flex; align-items: end; justify-content: space-between; gap: 30px; margin-bottom: 55px; }
+    .section-number { color: var(--coral); font-size: .7rem; letter-spacing: 0; }
+    .section h2 { max-width: 680px; margin: 12px 0 0; font-size: clamp(2.25rem, 5vw, 5rem); line-height: 1.2; letter-spacing: 0; overflow-wrap: anywhere; }
+    .section h2 em { color: var(--sky); font-family: inherit; font-weight: 700; font-style: normal; }
+    .section-intro { max-width: 355px; margin: 0; color: var(--muted); font-size: .9rem; line-height: 1.9; }
+    .story { padding: 130px 0 170px; }
+    .timeline { position: relative; display: grid; gap: 0; }
+    .timeline::before { content: ""; position: absolute; top: 0; bottom: 0; right: 50%; width: 1px; background: linear-gradient(var(--coral), rgba(167,233,236,.15), transparent); opacity: .75; }
+    .moment { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: clamp(35px, 7vw, 110px); align-items: center; min-height: 410px; }
+    .moment:nth-child(even) .moment-media { grid-column: 2; grid-row: 1; }
+    .moment:nth-child(even) .moment-copy { grid-column: 1; grid-row: 1; text-align: left; }
+    .moment-copy { padding: 30px 0; }
+    .moment-date { color: var(--coral-soft); font-size: .74rem; letter-spacing: 0; }
+    .moment h3 { margin: 12px 0 9px; font-size: clamp(1.6rem, 3vw, 2.6rem); line-height: 1.15; }
+    .moment p { max-width: 365px; margin: 0; color: var(--muted); line-height: 2; font-size: .9rem; }
+    .moment-note { margin-top: 22px; color: var(--sky); font-family: "IBM Plex Sans Arabic", system-ui, sans-serif; font-size: 1.1rem; font-style: normal; line-height: 1.8; }
+    .moment-media { position: relative; overflow: hidden; width: min(100%, 410px); aspect-ratio: 1.15; border-radius: var(--radius); border: 1px solid var(--line); box-shadow: var(--shadow); }
+    .moment-media::after { content: none; }
+    .moment-media img { width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform .8s cubic-bezier(.2,.8,.2,1); }
+    .moment:hover .moment-media img { transform: none; }
+    .moment::after { content: ""; position: absolute; right: calc(50% - 6px); top: 50%; width: 11px; height: 11px; border-radius: 50%; background: var(--coral); border: 3px solid var(--night); box-shadow: 0 0 0 6px rgba(99,183,255,.16), 0 0 22px var(--coral); }
+
+    .memories { padding: 100px 0 170px; }
+    .memory-field { position: relative; display: grid; grid-template-columns: repeat(12, 1fr); gap: 18px; align-items: start; }
+    .memory-card { position: relative; overflow: hidden; padding: 0; border: 1px solid var(--line); border-radius: 17px; background: #141825; text-align: right; box-shadow: 0 12px 35px rgba(0,0,0,.22); transition: transform .35s ease, border-color .35s, box-shadow .35s; }
+    .memory-card:hover { transform: translateY(-10px) rotate(-1deg); border-color: rgba(167,233,236,.6); box-shadow: 0 22px 50px rgba(0,0,0,.33); }
+    .memory-card img { width: 100%; height: 100%; object-fit: cover; object-position: center; aspect-ratio: 1; transition: transform .5s; }
+    .memory-card:hover img { transform: none; }
+    .memory-card figcaption { position: absolute; inset: auto 0 0; padding: 34px 17px 15px; color: var(--paper); background: linear-gradient(transparent, rgba(10,11,18,.82)); font-size: .75rem; }
+    .memory-card figcaption small { display: block; margin-top: 3px; color: var(--sky); font-family: "IBM Plex Sans Arabic", system-ui, sans-serif; font-size: 1rem; line-height: 1.5; }
+    .m1 { grid-column: 1 / span 4; margin-top: 60px; } .m2 { grid-column: 5 / span 3; } .m3 { grid-column: 8 / span 5; margin-top: 112px; } .m4 { grid-column: 3 / span 4; margin-top: -48px; } .m5 { grid-column: 7 / span 3; margin-top: 35px; }
+    .memory-center-note { grid-column: 1 / span 4; align-self: center; padding: 24px 0; color: var(--muted); font-size: .85rem; line-height: 1.9; }
+    .memory-center-note b { display: block; margin-bottom: 10px; color: var(--coral-soft); font-family: "Space Grotesk", "IBM Plex Sans Arabic", sans-serif; font-size: 1.8rem; font-weight: 600; }
+
+    .constellation-section { padding: 90px 0 160px; }
+    .constellation-wrap { display: grid; grid-template-columns: minmax(0, .86fr) minmax(0, 1.14fr); gap: 70px; align-items: center; }
+    .constellation-copy h2 { max-width: 510px; }
+    .constellation-copy p { max-width: 410px; color: var(--muted); font-size: .92rem; line-height: 2; }
+    .constellation-board { position: relative; min-height: 510px; border: 1px solid var(--line); background: rgba(255,255,255,.022); overflow: hidden; isolation: isolate; }
+    .constellation-board::before { content: ""; position: absolute; inset: 12% 9%; border: 1px dashed rgba(167,233,236,.18); border-radius: 50%; transform: rotate(-15deg) scaleY(.58); }
+    .constellation-board::after { content: ""; position: absolute; left: 9%; right: 9%; top: 51%; height: 1px; background: rgba(255,255,255,.08); transform: rotate(-14deg); }
+    .constellation-label { position: absolute; top: 24px; right: 25px; color: #707687; font-size: .68rem; letter-spacing: 0; text-transform: uppercase; }
+    .star-button { position: absolute; z-index: 3; width: 18px; height: 18px; padding: 0; border: 0; background: transparent; }
+    .star-button::before { content: "✦"; position: absolute; inset: -7px; color: var(--sky); font-size: 1.55rem; line-height: 1; text-shadow: 0 0 18px var(--sky); transition: color .2s, transform .2s; }
+    .star-button:hover::before, .star-button:focus-visible::before { color: var(--coral-soft); transform: scale(1.45) rotate(15deg); }
+    .star-button.active::before { color: var(--coral); }
+    .star-button:nth-of-type(2n)::before { color: var(--coral-soft); font-size: 1.1rem; }
+    .star-message { position: absolute; z-index: 5; left: 50%; bottom: 34px; translate: -50% 12px; width: min(82%, 350px); padding: 18px 20px; border-right: 2px solid var(--coral); background: rgba(10,11,18,.82); backdrop-filter: blur(12px); opacity: 0; pointer-events: none; transition: opacity .3s, translate .3s; }
+    .star-message.visible { opacity: 1; translate: -50% 0; }
+    .star-message small { color: var(--sky); font-size: .65rem; letter-spacing: 0; }
+    .star-message p { margin: 7px 0 0; color: var(--paper); font-family: "IBM Plex Sans Arabic", system-ui, sans-serif; font-size: 1.15rem; line-height: 1.75; }
+
+    .why { padding: 80px 0 150px; }
+    .why-layout { display: grid; grid-template-columns: .8fr 1.2fr; gap: 70px; align-items: start; }
+    .why-lead { position: sticky; top: 120px; }
+    .why-lead p { max-width: 320px; color: var(--muted); line-height: 2; }
+    .reason-list { border-top: 1px solid var(--line); }
+    .reason { display: grid; grid-template-columns: 58px 1fr 25px; gap: 18px; align-items: center; padding: 25px 0; border-bottom: 1px solid var(--line); transition: padding .3s, color .3s; }
+    .reason:hover { padding-inline: 15px; color: var(--coral-soft); }
+    .reason-index { color: var(--sky); font-family: "Space Grotesk", sans-serif; font-size: 1.4rem; }
+    .reason h3 { margin: 0 0 4px; font-size: 1.08rem; }
+    .reason p { margin: 0; color: var(--muted); font-size: .83rem; }
+    .reason svg { color: var(--coral); }
+
+    .counter-section { padding: 110px 0; background: rgba(167,233,236,.035); border-top: 1px solid rgba(167,233,236,.1); border-bottom: 1px solid rgba(167,233,236,.1); }
+    .counter-grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 80px; align-items: center; }
+    .counter-copy h2 { max-width: 520px; }
+    .counter-copy p { max-width: 380px; color: var(--muted); line-height: 2; }
+    .counter-controls { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin-top: 25px; }
+    .date-field { display: grid; gap: 7px; color: #888e9e; font-size: .68rem; }
+    .date-field input { width: 155px; height: 43px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); background: rgba(255,255,255,.06); color-scheme: dark; }
+    .counter-output { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .count-box { min-width: 0; padding: 24px 16px; border: 1px solid var(--line); background: rgba(10,11,18,.5); text-align: center; }
+    .count-box strong { display: block; color: var(--sky); font-family: "Space Grotesk", sans-serif; font-size: clamp(2.4rem, 6vw, 5.4rem); line-height: 1; font-weight: 500; }
+    .count-box span { display: block; margin-top: 10px; color: #8e94a3; font-size: .7rem; }
+
+    .letter { padding: 180px 0 180px; text-align: center; }
+    .letter .section-number { justify-content: center; }
+    .letter h2 { max-width: 940px; margin: 25px auto 30px; font-size: clamp(2.5rem, 6vw, 6.2rem); line-height: 1.2; letter-spacing: 0; }
+    .letter h2 em { color: var(--coral-soft); }
+    .letter-copy { max-width: 560px; min-height: 150px; margin: 0 auto 40px; color: var(--muted); font-family: "IBM Plex Sans Arabic", system-ui, sans-serif; font-size: clamp(1.05rem, 2vw, 1.45rem); line-height: 2; }
+    .letter-signature { color: var(--sky); font-size: .78rem; letter-spacing: 0; text-transform: uppercase; }
+    .footer { display: flex; align-items: center; justify-content: space-between; gap: 20px; width: min(1200px, calc(100% - 9vw)); margin: auto; padding: 24px 0 40px; border-top: 1px solid var(--line); color: #777c8c; font-size: .7rem; }
+    .footer b { color: var(--coral-soft); font-family: "Space Grotesk", "IBM Plex Sans Arabic", sans-serif; font-size: 1.15rem; font-weight: 600; }
+
+    .music-dock { position: fixed; z-index: 25; right: 4vw; bottom: 25px; display: flex; align-items: center; gap: 11px; max-width: calc(100% - 8vw); padding: 9px 11px; border: 1px solid var(--line); border-radius: 999px; background: rgba(10,11,18,.72); backdrop-filter: blur(18px); box-shadow: 0 12px 30px rgba(0,0,0,.2); }
+    .music-toggle { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid rgba(167,233,236,.35); border-radius: 50%; color: var(--sky); background: transparent; }
+    .music-toggle.playing { color: var(--night); background: var(--sky); }
+    .music-info { display: grid; gap: 1px; min-width: 115px; max-width: 220px; }
+    .music-info strong { color: var(--ink); font-size: .67rem; }
+    .music-info span { color: #777c8c; font-size: .6rem; line-height: 1.35; overflow-wrap: anywhere; }
+    .equalizer { display: flex; align-items: end; gap: 2px; height: 18px; margin-inline-start: 4px; }
+    .equalizer i { display: block; width: 2px; height: 7px; background: var(--coral); animation: eq .8s ease-in-out infinite alternate; animation-play-state: paused; }
+    .equalizer i:nth-child(2) { height: 13px; animation-delay: -.25s; } .equalizer i:nth-child(3) { height: 9px; animation-delay: -.5s; } .equalizer i:nth-child(4) { height: 15px; animation-delay: -.12s; }
+    .music-dock.playing .equalizer i { animation-play-state: running; }
+    @keyframes eq { to { transform: scaleY(.35); } }
+
+    .modal { position: fixed; z-index: 50; inset: 0; display: grid; place-items: center; padding: 25px; background: rgba(4,5,9,.82); backdrop-filter: blur(14px); opacity: 0; pointer-events: none; transition: opacity .3s; }
+    .modal.open { opacity: 1; pointer-events: auto; }
+    .modal-panel { position: relative; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(230px, .85fr); width: min(900px, 100%); max-height: min(650px, 90vh); overflow: hidden; border: 1px solid var(--line); background: var(--night-2); box-shadow: var(--shadow); transform: translateY(20px) scale(.97); transition: transform .35s; }
+    .modal.open .modal-panel { transform: translateY(0) scale(1); }
+    .modal-panel img { width: 100%; height: 100%; min-height: 330px; object-fit: cover; object-position: center; }
+    .modal-copy { display: flex; flex-direction: column; justify-content: end; padding: 28px; }
+    .modal-copy small { color: var(--coral-soft); letter-spacing: 0; }
+    .modal-copy h3 { margin: 9px 0; font-size: 1.9rem; }
+    .modal-copy p { color: var(--muted); line-height: 1.9; font-size: .85rem; }
+    .modal-close { position: absolute; z-index: 2; top: 14px; right: 14px; display: grid; place-items: center; width: 35px; height: 35px; border: 1px solid var(--line); border-radius: 50%; color: var(--ink); background: rgba(10,11,18,.66); }
+    .reveal { opacity: 0; transform: translateY(25px); transition: opacity .8s ease, transform .8s ease; }
+    .reveal.in-view { opacity: 1; transform: none; }
+
+    @media (max-width: 850px) {
+      .nav { inset-inline: 16px; }
+      .nav-links { display: none; }
+      .hero-grid, .constellation-wrap, .why-layout, .counter-grid { grid-template-columns: 1fr; }
+      .hero { padding-top: 130px; padding-bottom: 150px; }
+      .hero h1 { font-size: clamp(2.75rem, 11vw, 4.8rem); line-height: 1.2; }
+      .typed-line { min-height: 4.5em; font-size: 1.12rem; line-height: 1.8; }
+      .scroll-cue { display: none; }
+      .hero-copy { text-align: center; }
+      .eyebrow, .hero-actions { justify-content: center; }
+      .hero-lede { margin-inline: auto; }
+      .orbit-scene { min-height: 400px; }
+      .section-header { display: block; }
+      .section-intro { margin-top: 20px; }
+      .timeline::before { right: 9px; }
+      .moment, .moment:nth-child(even) { display: grid; grid-template-columns: 1fr; gap: 18px; min-height: 0; padding: 40px 32px 65px 0; }
+      .moment:nth-child(even) .moment-media, .moment:nth-child(even) .moment-copy { grid-column: auto; grid-row: auto; text-align: right; }
+      .moment-media { width: 100%; }
+      .moment::after { right: 4px; top: 50%; }
+      .memory-field { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .m1, .m2, .m3, .m4, .m5, .memory-center-note { grid-column: auto; margin-top: 0; }
+      .memory-center-note { grid-column: 1 / -1; order: -1; }
+      .constellation-board { min-height: 430px; }
+      .why-lead { position: static; }
+      .counter-output { order: -1; }
+      .letter { padding: 130px 0; }
+    }
+    @media (max-width: 520px) {
+      .section { width: min(100% - 36px, 1200px); }
+      .footer { width: calc(100% - 36px); display: grid; }
+      .hero h1 { font-size: clamp(3.1rem, 17vw, 5rem); }
+      .orbit-label { right: -5px; top: 7%; }
+      .orbit-stamp { left: -2px; bottom: 4%; }
+      .music-dock { right: 16px; left: 16px; bottom: 16px; justify-content: center; min-height: 56px; }
+      .music-info { min-width: 0; max-width: 230px; }
+      .music-info span { font-size: .58rem; }
+      .modal-panel { grid-template-columns: 1fr; max-height: 90vh; overflow-y: auto; }
+      .modal-panel img { height: 260px; min-height: 0; }
+      .modal-copy { padding: 22px; }
+      .counter-output { gap: 6px; }
+      .count-box { padding: 18px 6px; }
+      .count-box strong { font-size: 2.5rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="sky" class="sky-layer" aria-hidden="true"></canvas>
+  <div class="grain-layer" aria-hidden="true"></div>
+  <div class="site-shell">
+    <header class="nav" aria-label="التنقل الرئيسي">
+      <a class="brand" href="#top" aria-label="مَدَارنا"><span class="brand-mark">∞</span><span>مَدَارنا</span></a>
+      <nav class="nav-links">
+        <a class="active" href="#story" data-ar="رحلتنا" data-en="Our story">رحلتنا</a>
+        <a href="#memories" data-ar="الذكريات" data-en="Memories">الذكريات</a>
+        <a href="#constellation" data-ar="الرسائل" data-en="Notes">الرسائل</a>
+      </nav>
+      <button class="language-toggle" id="languageToggle" type="button" aria-label="تبديل اللغة"><span class="lang-ar">EN</span><span class="lang-en">عربي</span><i data-lucide="languages" aria-hidden="true"></i></button>
+    </header>
+
+    <main id="top">
+      <section class="hero section" aria-labelledby="hero-title">
+        <div class="hero-grid">
+          <div class="hero-copy reveal">
+            <div class="eyebrow" data-ar="ملفّنا الكوني  /  01" data-en="Our cosmic file  /  01">ملفّنا الكوني  /  01</div>
+            <h1 id="hero-title" class="display" data-ar="في مدارنا، كل شيء يعود إليك" data-en="In our orbit, everything returns to you">في مدارنا، كل شيء يعود إليك</h1>
+            <p class="hero-lede" data-ar="هذه ليست صفحة عادية. إنها مساحة صغيرة تحفظ التفاصيل التي لا نريد للوقت أن يأخذها منّا." data-en="This is not an ordinary page. It is a small place for the details we never want time to take from us.">هذه ليست صفحة عادية. إنها مساحة صغيرة تحفظ التفاصيل التي لا نريد للوقت أن يأخذها منّا.</p>
+            <div class="typed-line" id="typedLine" aria-live="polite"></div>
+            <div class="hero-actions">
+              <a class="primary-btn" href="#story"><span data-ar="ابدئي الرحلة" data-en="Begin the journey">ابدئي الرحلة</span><i data-lucide="arrow-down-left" aria-hidden="true"></i></a>
+              <a class="ghost-btn" href="#memories"><i data-lucide="sparkles" aria-hidden="true"></i><span data-ar="افتحي الذكريات" data-en="Open memories">افتحي الذكريات</span></a>
+            </div>
+            <div class="tiny-note" data-ar="صُمم لكِ، بهدوء يشبهكِ." data-en="Made for you, with a quietness that feels like you.">صُمم لكِ، بهدوء يشبهكِ.</div>
+          </div>
+          <div class="orbit-scene reveal" aria-label="صورة رمزية لكوننا">
+            <div class="portrait-orbit"><img src="IMG-20260910-WA0006.jpg" alt="لحظة حب هادئة" /></div>
+            <div class="orbit-label"><strong>YOU / 001</strong><span>my favourite place</span></div>
+            <div class="orbit-stamp"><b>14.02.22</b><span>the first little orbit</span></div>
+            <span class="orbit-dot dot-a"></span><span class="orbit-dot dot-b"></span>
+          </div>
+        </div>
+        <div class="scroll-cue"><span></span><span data-ar="مرّري لاكتشاف القصة" data-en="scroll to discover">مرّري لاكتشاف القصة</span><span></span></div>
+      </section>
+
+      <section class="story section" id="story" aria-labelledby="story-title">
+        <div class="section-header reveal">
+          <div><div class="section-number">02 / OUR STORY</div><h2 id="story-title" data-ar="ثلاث لحظات، وكون كامل بينهما" data-en="Three moments, an entire universe between them">ثلاث لحظات، وكون كامل بينهما</h2></div>
+          <p class="section-intro" data-ar="لا نحاول أن نلخّص كل شيء. بعض الذكريات تستحق أن نمشي نحوها ببطء." data-en="We are not trying to fit everything in. Some memories deserve to be walked toward slowly.">لا نحاول أن نلخّص كل شيء. بعض الذكريات تستحق أن نمشي نحوها ببطء.</p>
+        </div>
+        <div class="timeline">
+          <article class="moment reveal"><div class="moment-copy"><div class="moment-date">02 FEBRUARY 2025</div><h3 data-ar="هنا بدأ كل شيء" data-en="This is where it began">هنا بدأ كل شيء</h3><p data-ar="رسالة عابرة، ضحكة طويلة، وإحساس صغير يقول إن هذه الصدفة ليست عابرة كما تبدو." data-en="A passing message, a long laugh, and a small feeling that this coincidence was not as passing as it seemed.">رسالة عابرة، ضحكة طويلة، وإحساس صغير يقول إن هذه الصدفة ليست عابرة كما تبدو.</p><div class="moment-note" data-ar="أجمل صدفة في توقيت مثالي." data-en="The loveliest coincidence, at the perfect time.">أجمل صدفة في توقيت مثالي.</div></div><figure class="moment-media"><img loading="lazy" src="IMG-20260910-WA0001.jpg" alt="زهور وردية ودفء رومانسي" /></figure></article>
+          <article class="moment reveal"><div class="moment-copy"><div class="moment-date">A LITTLE LATER</div><h3 data-ar="صارت الأيام أخفّ" data-en="The days became lighter">صارت الأيام أخفّ</h3><p data-ar="لم يتغيّر العالم من حولنا، لكن وجودك جعل تفاصيله الصغيرة تستحق الانتباه: قهوة، طريق طويل، وأغنية نعرفها معًا." data-en="The world around us did not change, but you made its small details worth noticing: coffee, a long road, and a song we know together.">لم يتغيّر العالم من حولنا، لكن وجودك جعل تفاصيله الصغيرة تستحق الانتباه: قهوة، طريق طويل، وأغنية نعرفها معًا.</p><div class="moment-note" data-ar="معكِ، العادي يصبح ذكرى." data-en="With you, ordinary becomes a memory.">معكِ، العادي يصبح ذكرى.</div></div><figure class="moment-media"><img loading="lazy" src="IMG-20260910-WA0009.jpg" alt="زهور في ضوء الشمس" /></figure></article>
+          <article class="moment reveal"><div class="moment-copy"><div class="moment-date">RIGHT NOW</div><h3 data-ar="ما زلنا نختار بعضنا" data-en="We still choose each other">ما زلنا نختار بعضنا</h3><p data-ar="وهذا أجمل جزء في الحكاية: أن الحب ليس نقطة وصلنا إليها، بل طريق نعرف أننا نريد أن نكمله سويًا." data-en="And this is the best part: love is not a place we reached, but a road we know we want to keep walking together.">وهذا أجمل جزء في الحكاية: أن الحب ليس نقطة وصلنا إليها، بل طريق نعرف أننا نريد أن نكمله سويًا.</p><div class="moment-note" data-ar="وكل مرة، أنتِ الاختيار." data-en="And every time, you are the choice.">وكل مرة، أنتِ الاختيار.</div></div><figure class="moment-media"><img loading="lazy" src="IMG-20260910-WA0002.jpg" alt="يد تمسك يدًا في ضوء دافئ" /></figure></article>
+        </div>
+      </section>
+
+      <section class="memories section" id="memories" aria-labelledby="memories-title">
+        <div class="section-header reveal"><div><div class="section-number">03 / MEMORY INDEX</div><h2 id="memories-title" data-ar="أشياء صغيرة، لكنها تشبهنا" data-en="Small things, unmistakably ours">أشياء صغيرة، لكنها تشبهنا</h2></div><p class="section-intro" data-ar="اضغطي على أي صورة. لكل واحدة منها جملة لا تظهر إلا عندما نقترب." data-en="Tap any image. Each one keeps a sentence that only appears when we get close.">اضغطي على أي صورة. لكل واحدة منها جملة لا تظهر إلا عندما نقترب.</p></div>
+        <div class="memory-field">
+          <button class="memory-card m1 reveal" type="button" data-title-ar="وقت هادئ" data-title-en="A quiet hour" data-copy-ar="هناك لحظات لا تحتاج إلى خطة. يكفي أن نكون معًا، ويصبح الوقت لطيفًا." data-copy-en="Some moments need no plan. Being together is enough to make time feel kind."><img loading="lazy" src="IMG-20260910-WA0007.jpg" alt="كوب قهوة على طاولة" /><figcaption><span>MEMORY 01</span><small data-ar="وقت هادئ" data-en="A quiet hour">وقت هادئ</small></figcaption></button>
+          <button class="memory-card m2 reveal" type="button" data-title-ar="لون السماء" data-title-en="Sky colour" data-copy-ar="أحب الطريقة التي تتوقفين بها لتلاحظي شيئًا لا يلاحظه أحد سوانا." data-copy-en="I love the way you pause to notice something no one else would notice with us."><img loading="lazy" src="IMG-20260910-WA0008.jpg" alt="سماء وردية فوق البحر" /><figcaption><span>MEMORY 02</span><small data-ar="لون السماء" data-en="Sky colour">لون السماء</small></figcaption></button>
+          <button class="memory-card m3 reveal" type="button" data-title-ar="على الطريق" data-title-en="On the way" data-copy-ar="لا يهم إلى أين نذهب، ما دام الطريق بجانبكِ يبدو كأنه مكان أعرفه منذ زمن." data-copy-en="It does not matter where we go; beside you, the road feels like a place I have always known."><img loading="lazy" src="IMG-20260910-WA0003.jpg" alt="طريق بين الجبال" /><figcaption><span>MEMORY 03</span><small data-ar="على الطريق" data-en="On the way">على الطريق</small></figcaption></button>
+          <div class="memory-center-note reveal"><b>the details matter</b><span data-ar="لأن الحب يعيش في التفاصيل: في نظرة سريعة، في أغنية، وفي يد تبحث عن يدكِ دون تفكير." data-en="Because love lives in details: a quick glance, a song, and a hand reaching for yours without thinking.">لأن الحب يعيش في التفاصيل: في نظرة سريعة، في أغنية، وفي يد تبحث عن يدكِ دون تفكير.</span></div>
+          <button class="memory-card m4 reveal" type="button" data-title-ar="ضحكة بلا موعد" data-title-en="An unscheduled laugh" data-copy-ar="أفضل ضحكاتنا هي التي تبدأ من لا شيء، ثم تجعل كل شيء يبدو أخف." data-copy-en="Our best laughs start from nothing, then make everything feel lighter."><img loading="lazy" src="IMG-20251104-WA0095.jpg" alt="شخصان يضحكان في الطبيعة" /><figcaption><span>MEMORY 04</span><small data-ar="ضحكة بلا موعد" data-en="An unscheduled laugh">ضحكة بلا موعد</small></figcaption></button>
+          <button class="memory-card m5 reveal" type="button" data-title-ar="مكان مفضل" data-title-en="A favourite place" data-copy-ar="كل مكان يصبح أجمل حين تتركين فيه جزءًا من ضحكتكِ." data-copy-en="Every place becomes better when you leave a little of your laugh in it."><img loading="lazy" src="file_000000003fe0720aa172a01a61442d3c.png" alt="ضوء ذهبي بين الأشجار" /><figcaption><span>MEMORY 05</span><small data-ar="مكان مفضل" data-en="A favourite place">مكان مفضل</small></figcaption></button>
+        </div>
+      </section>
+
+      <section class="constellation-section section" id="constellation" aria-labelledby="constellation-title">
+        <div class="constellation-wrap">
+          <div class="constellation-copy reveal"><div class="section-number">04 / HIDDEN NOTES</div><h2 id="constellation-title" data-ar="هناك رسائل خبّأتها في النجوم" data-en="I hid a few notes in the stars">هناك رسائل خبّأتها في <em>النجوم</em></h2><p data-ar="كل نجمة تحمل شيئًا أريدكِ أن تعرفيه. اختاري واحدة، واتركي لي الباقي." data-en="Each star carries something I want you to know. Choose one, and let me keep the rest.">كل نجمة تحمل شيئًا أريدكِ أن تعرفيه. اختاري واحدة، واتركي لي الباقي.</p><button class="ghost-btn" id="randomNote" type="button"><i data-lucide="shuffle" aria-hidden="true"></i><span data-ar="فاجئيني برسالة" data-en="Surprise me">فاجئيني برسالة</span></button></div>
+          <div class="constellation-board reveal" id="constellationBoard"><div class="constellation-label">PRIVATE CONSTELLATION / 07</div><div class="star-message" id="starMessage"><small>NOTE FROM YOUR ORBIT</small><p id="starMessageText"></p></div></div>
+        </div>
+      </section>
+
+      <section class="why section" aria-labelledby="why-title">
+        <div class="why-layout"><div class="why-lead reveal"><div class="section-number">05 / WHY YOU</div><h2 id="why-title" data-ar="لماذا أنتِ؟" data-en="Why you?">لماذا أنتِ؟</h2><p data-ar="لأن الإجابة لا تحتاج إلى قائمة، لكنني أحب أن أترك لكِ بعض الأدلة." data-en="Because the answer needs no list, but I like leaving you a few pieces of evidence.">لأن الإجابة لا تحتاج إلى قائمة، لكنني أحب أن أترك لكِ بعض الأدلة.</p></div><div class="reason-list"><article class="reason reveal"><span class="reason-index">01</span><div><h3 data-ar="تجعلين العادي يلمع" data-en="You make the ordinary glow">تجعلين العادي يلمع</h3><p data-ar="حتى الأيام البسيطة تبدو كأن لها موسيقى خاصة." data-en="Even simple days feel like they have their own soundtrack.">حتى الأيام البسيطة تبدو كأن لها موسيقى خاصة.</p></div><i data-lucide="arrow-up-left" aria-hidden="true"></i></article><article class="reason reveal"><span class="reason-index">02</span><div><h3 data-ar="وجودكِ يشبه السلام" data-en="Your presence feels like peace">وجودكِ يشبه السلام</h3><p data-ar="لا أحتاج أن أشرح نفسي كثيرًا حين أكون بقربكِ." data-en="I do not have to explain myself too much when I am near you.">لا أحتاج أن أشرح نفسي كثيرًا حين أكون بقربكِ.</p></div><i data-lucide="arrow-up-left" aria-hidden="true"></i></article><article class="reason reveal"><span class="reason-index">03</span><div><h3 data-ar="تتذكرين التفاصيل" data-en="You remember the details">تتذكرين التفاصيل</h3><p data-ar="وهذا يجعلكِ أقرب مكان يمكن للقلب أن يعود إليه." data-en="That makes you the closest place for a heart to return to.">وهذا يجعلكِ أقرب مكان يمكن للقلب أن يعود إليه.</p></div><i data-lucide="arrow-up-left" aria-hidden="true"></i></article><article class="reason reveal"><span class="reason-index">04</span><div><h3 data-ar="لأنكِ أنتِ" data-en="Simply, because you are you">لأنكِ أنتِ</h3><p data-ar="وهذه وحدها إجابة كاملة." data-en="And that alone is a complete answer.">وهذه وحدها إجابة كاملة.</p></div><i data-lucide="arrow-up-left" aria-hidden="true"></i></article></div></div>
+      </section>
+
+      <section class="counter-section" aria-labelledby="counter-title">
+        <div class="section counter-grid"><div class="counter-copy reveal"><div class="section-number">06 / TIME TOGETHER</div><h2 id="counter-title" data-ar="كم مرّ من الوقت منذ بدأت الحكاية؟" data-en="How long has it been since our story began?">كم مرّ من الوقت منذ بدأت الحكاية؟</h2><p data-ar="غيّري التاريخ متى شئتِ. بعض الأرقام تستحق أن نحتفل بها كل يوم." data-en="Change the date whenever you like. Some numbers deserve to be celebrated every day.">غيّري التاريخ متى شئتِ. بعض الأرقام تستحق أن نحتفل بها كل يوم.</p><div class="counter-controls"><label class="date-field"><span data-ar="تاريخ البداية" data-en="Start date">تاريخ البداية</span><input id="startDate" type="date" value="2025-02-02" /></label><button class="primary-btn" id="updateCounter" type="button"><span data-ar="حدّثي العداد" data-en="Update">حدّثي العداد</span><i data-lucide="refresh-cw" aria-hidden="true"></i></button></div></div><div class="counter-output reveal"><div class="count-box"><strong id="daysCount">0</strong><span data-ar="يومًا" data-en="days">يومًا</span></div><div class="count-box"><strong id="hoursCount">0</strong><span data-ar="ساعة تقريبًا" data-en="hours, roughly">ساعة تقريبًا</span></div><div class="count-box"><strong id="heartCount">∞</strong><span data-ar="لحظة تستحق" data-en="moments worth keeping">لحظة تستحق</span></div></div></div>
+      </section>
+
+      <section class="letter section" aria-labelledby="letter-title"><div class="section-number reveal">07 / THE LAST PAGE</div><h2 id="letter-title" class="quote reveal" data-ar="لو كان لي أن أختار مكانًا واحدًا في هذا الكون، فسأختاركِ أنتِ… كل مرة." data-en="If I could choose one place in this universe, I would choose you… every time.">لو كان لي أن أختار مكانًا واحدًا في هذا الكون، فسأختاركِ أنتِ… كل مرة.</h2><p class="letter-copy" id="letterCopy"></p><div class="letter-signature reveal" data-ar="أنتِ كوني إلى الأبد · with love, always" data-en="You are my forever universe · with love, always">أنتِ كوني إلى الأبد · with love, always</div></section>
+    </main>
+
+    <footer class="footer"><b>made with love & stardust</b><span data-ar="لا تحليلات. لا إعلانات. فقط نحن." data-en="No analytics. No ads. Just us.">لا تحليلات. لا إعلانات. فقط نحن.</span><span>© 2025—∞</span></footer>
+  </div>
+
+  <audio id="backgroundMusic" loop preload="metadata"><source src="leberch-romantic-music-355597.mp3" type="audio/mpeg" /></audio>
+  <div class="music-dock" id="musicDock" aria-label="مشغل موسيقى الخلفية"><button class="music-toggle" id="musicToggle" type="button" aria-label="تشغيل موسيقى الخلفية"><i data-lucide="play" aria-hidden="true"></i></button><div class="music-info"><strong data-ar="موسيقى الخلفية" data-en="background music">موسيقى الخلفية</strong><span id="musicStatus">اضغطي للتشغيل</span></div><div class="equalizer" aria-hidden="true"><i></i><i></i><i></i><i></i></div></div>
+
+  <div class="modal" id="memoryModal" aria-hidden="true"><div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="modal-close" id="modalClose" type="button" aria-label="إغلاق"><i data-lucide="x" aria-hidden="true"></i></button><img id="modalImage" src="" alt="" /><div class="modal-copy"><small>MEMORY / <span id="modalNumber">01</span></small><h3 id="modalTitle"></h3><p id="modalCopy"></p><button class="ghost-btn" id="modalBack" type="button"><i data-lucide="arrow-right" aria-hidden="true"></i><span data-ar="عودي إلى الذكريات" data-en="Back to memories">عودي إلى الذكريات</span></button></div></div></div>
+
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script>
+    const root = document.documentElement;
+    const body = document.body;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (window.lucide) window.lucide.createIcons();
+
+    // A small canvas sky keeps the atmosphere alive without a heavy 3D scene.
+    const canvas = document.getElementById('sky');
+    const ctx = canvas.getContext('2d', { alpha: true });
+    let stars = [];
+    let pointer = { x: 0, y: 0 };
+    let canvasWidth = 0;
+    let canvasHeight = 0;
+    function resizeSky() {
+      const ratio = Math.min(window.devicePixelRatio || 1, 1.7);
+      canvasWidth = window.innerWidth;
+      canvasHeight = window.innerHeight;
+      canvas.width = canvasWidth * ratio;
+      canvas.height = canvasHeight * ratio;
+      canvas.style.width = canvasWidth + 'px';
+      canvas.style.height = canvasHeight + 'px';
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      const count = window.innerWidth < 700 ? 65 : 125;
+      stars = Array.from({ length: count }, (_, index) => ({
+        x: Math.random() * canvasWidth,
+        y: Math.random() * canvasHeight,
+        radius: Math.random() * 1.35 + .15,
+        alpha: Math.random() * .7 + .12,
+        speed: Math.random() * .18 + .025,
+        phase: Math.random() * Math.PI * 2,
+        tint: index % 7 === 0 ? 'coral' : index % 5 === 0 ? 'sky' : 'white'
+      }));
+    }
+    function drawSky(time = 0) {
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      const px = pointer.x * 12;
+      const py = pointer.y * 8;
+      stars.forEach((star) => {
+        const x = star.x + px * star.speed;
+        const y = (star.y + time * .008 * star.speed) % (canvasHeight + 20) - 10 + py * star.speed;
+        const pulse = star.alpha + Math.sin(time * .0012 + star.phase) * .16;
+        ctx.globalAlpha = Math.max(.08, pulse);
+        ctx.fillStyle = star.tint === 'coral' ? '#63b7ff' : star.tint === 'sky' ? '#8fd8ff' : '#f8f4ed';
+        ctx.beginPath(); ctx.arc(x, y, star.radius, 0, Math.PI * 2); ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+      if (!prefersReducedMotion) requestAnimationFrame(drawSky);
+    }
+    resizeSky(); drawSky();
+    window.addEventListener('resize', resizeSky, { passive: true });
+    window.addEventListener('pointermove', (event) => {
+      pointer.x = (event.clientX / window.innerWidth - .5);
+      pointer.y = (event.clientY / window.innerHeight - .5);
+    }, { passive: true });
+
+    const revealObserver = new IntersectionObserver((entries) => entries.forEach((entry) => {
+      if (entry.isIntersecting) { entry.target.classList.add('in-view'); revealObserver.unobserve(entry.target); }
+    }), { threshold: .12 });
+    document.querySelectorAll('.reveal').forEach((element) => revealObserver.observe(element));
+
+    const typeText = (element, text, speed = 34) => {
+      element.textContent = '';
+      let index = 0;
+      const tick = () => {
+        element.textContent = text.slice(0, index++);
+        if (index <= text.length) window.setTimeout(tick, prefersReducedMotion ? 0 : speed);
+      };
+      tick();
+    };
+    const typedCopy = {
+      ar: '“في هذا الكون الواسع… أنتِ أجمل شيء حدث لي.”',
+      en: '“In this endless universe… you are my favourite thing.”'
+    };
+    const letterCopy = {
+      ar: 'أحبكِ في التفاصيل التي لا يراها أحد، في الهدوء الذي يأتي بعد يوم طويل، وفي كل مرة تجعلينني أشعر أنني وصلت إلى المكان الصحيح. شكراً لأنكِ أنتِ.',
+      en: 'I love you in the details no one sees, in the quiet after a long day, and in every moment that makes me feel I have arrived at the right place. Thank you for being you.'
+    };
+    typeText(document.getElementById('typedLine'), typedCopy.ar, 43);
+    const letterObserver = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) { typeText(document.getElementById('letterCopy'), body.classList.contains('english') ? letterCopy.en : letterCopy.ar, 23); letterObserver.disconnect(); }
+    }, { threshold: .35 });
+    letterObserver.observe(document.getElementById('letterCopy'));
+
+    // Language switch swaps the short copy stored beside each visible string.
+    document.getElementById('languageToggle').addEventListener('click', () => {
+      body.classList.toggle('english');
+      const isEnglish = body.classList.contains('english');
+      root.lang = isEnglish ? 'en' : 'ar';
+      root.dir = isEnglish ? 'ltr' : 'rtl';
+      document.documentElement.style.setProperty('--direction', isEnglish ? 'ltr' : 'rtl');
+      typeText(document.getElementById('typedLine'), isEnglish ? typedCopy.en : typedCopy.ar, 24);
+      const letterElement = document.getElementById('letterCopy');
+      if (letterElement.textContent) typeText(letterElement, isEnglish ? letterCopy.en : letterCopy.ar, 16);
+      document.querySelectorAll('[data-ar][data-en]').forEach((element) => {
+        element.setAttribute('aria-label', isEnglish ? element.dataset.en : element.dataset.ar);
+      });
+    });
+
+    // Interactive memory modal.
+    const modal = document.getElementById('memoryModal');
+    const modalImage = document.getElementById('modalImage');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalCopy = document.getElementById('modalCopy');
+    const openMemory = (card) => {
+      const isEnglish = body.classList.contains('english');
+      modalImage.src = card.querySelector('img').src;
+      modalImage.alt = card.querySelector('img').alt;
+      modalTitle.textContent = isEnglish ? card.dataset.titleEn : card.dataset.titleAr;
+      modalCopy.textContent = isEnglish ? card.dataset.copyEn : card.dataset.copyAr;
+      document.getElementById('modalNumber').textContent = card.querySelector('figcaption span').textContent.replace(/\D/g, '') || '01';
+      modal.classList.add('open'); modal.setAttribute('aria-hidden', 'false'); body.style.overflow = 'hidden';
+    };
+    const closeMemory = () => { modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true'); body.style.overflow = ''; };
+    document.querySelectorAll('.memory-card').forEach((card) => card.addEventListener('click', () => openMemory(card)));
+    document.getElementById('modalClose').addEventListener('click', closeMemory);
+    document.getElementById('modalBack').addEventListener('click', closeMemory);
+    modal.addEventListener('click', (event) => { if (event.target === modal) closeMemory(); });
+    document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeMemory(); });
+
+    // Hidden constellation messages.
+    const notes = [
+      ['أحبكِ أكثر مما تستطيع الكلمات أن ترتّبه.', 'I love you more than words can arrange.'],
+      ['وجودكِ يجعل كل كون أشبه بالبيت.', 'You make every universe feel like home.'],
+      ['كل لحظة معكِ ذكرى أريد الاحتفاظ بها.', 'Every moment with you is a memory I want to keep.'],
+      ['أنتِ أجمل صدفة لم أحاول التخطيط لها.', 'You are the loveliest coincidence I never planned.'],
+      ['حتى صمتنا معًا لديه شيء يقوله.', 'Even our silence has something to say.'],
+      ['سأختاركِ في كل نسخة من هذه الحكاية.', 'I would choose you in every version of this story.'],
+      ['ضحكتكِ هي إشعاري المفضل.', 'Your laugh is my favourite notification.']
+    ];
+    const board = document.getElementById('constellationBoard');
+    const messageBox = document.getElementById('starMessage');
+    const messageText = document.getElementById('starMessageText');
+    notes.forEach((note, index) => {
+      const star = document.createElement('button');
+      star.type = 'button'; star.className = 'star-button'; star.dataset.index = index;
+      star.style.left = `${15 + ((index * 19) % 70)}%`; star.style.top = `${19 + ((index * 31) % 58)}%`;
+      star.setAttribute('aria-label', `رسالة ${index + 1}`);
+      star.addEventListener('click', () => showNote(index)); board.appendChild(star);
+    });
+    function showNote(index) {
+      const isEnglish = body.classList.contains('english');
+      document.querySelectorAll('.star-button').forEach((star) => star.classList.toggle('active', Number(star.dataset.index) === index));
+      messageText.textContent = isEnglish ? notes[index][1] : notes[index][0];
+      messageBox.classList.add('visible');
+    }
+    document.getElementById('randomNote').addEventListener('click', () => showNote(Math.floor(Math.random() * notes.length)));
+
+    // Editable relationship counter.
+    const dateInput = document.getElementById('startDate');
+    function updateCounter() {
+      const start = new Date(`${dateInput.value}T00:00:00`);
+      const now = new Date();
+      const days = Math.max(0, Math.floor((now - start) / 86400000));
+      document.getElementById('daysCount').textContent = days.toLocaleString(body.classList.contains('english') ? 'en-US' : 'ar-EG');
+      document.getElementById('hoursCount').textContent = Math.max(0, days * 24).toLocaleString(body.classList.contains('english') ? 'en-US' : 'ar-EG');
+    }
+    document.getElementById('updateCounter').addEventListener('click', updateCounter); updateCounter();
+
+    // The filename comes from the source element, so any local MP3 name works.
+    const backgroundMusic = document.getElementById('backgroundMusic');
+    const musicSourcePath = backgroundMusic.querySelector('source')?.getAttribute('src') || '';
+    const musicDock = document.getElementById('musicDock');
+    const musicToggle = document.getElementById('musicToggle');
+    const musicStatus = document.getElementById('musicStatus');
+    function setMusicState(isPlaying) {
+      const isEnglish = body.classList.contains('english');
+      musicDock.classList.toggle('playing', isPlaying);
+      musicToggle.classList.toggle('playing', isPlaying);
+      musicStatus.textContent = isPlaying ? (isEnglish ? 'playing in the background' : 'تعمل في الخلفية') : (isEnglish ? 'tap to play' : 'اضغطي للتشغيل');
+      musicToggle.setAttribute('aria-label', isPlaying ? (isEnglish ? 'Pause background music' : 'إيقاف موسيقى الخلفية') : (isEnglish ? 'Play background music' : 'تشغيل موسيقى الخلفية'));
+      musicToggle.innerHTML = `<i data-lucide="${isPlaying ? 'pause' : 'play'}" aria-hidden="true"></i>`;
+      if (window.lucide) window.lucide.createIcons();
+    }
+    async function toggleMusic() {
+      if (backgroundMusic.paused) {
+        try {
+          // A quick same-folder check gives a useful message when the file is not readable.
+          if (location.protocol.startsWith('http')) {
+            const sourceCheck = await fetch(musicSourcePath, { method: 'HEAD', cache: 'no-store' });
+            if (!sourceCheck.ok) throw new Error('music source is missing');
+          }
+          await backgroundMusic.play(); setMusicState(true);
+        } catch { musicStatus.textContent = body.classList.contains('english') ? 'check the music file beside index.html' : 'تحققي من ملف الموسيقى بجانب index.html'; }
+      } else {
+        backgroundMusic.pause(); setMusicState(false);
+      }
+    }
+    backgroundMusic.addEventListener('play', () => setMusicState(true));
+    backgroundMusic.addEventListener('pause', () => setMusicState(false));
+    backgroundMusic.addEventListener('error', () => { musicStatus.textContent = body.classList.contains('english') ? 'check the music file beside index.html' : 'تحققي من ملف الموسيقى بجانب index.html'; });
+    musicToggle.addEventListener('click', toggleMusic);
+    document.querySelector('.hero .primary-btn').addEventListener('click', () => { if (backgroundMusic.paused) toggleMusic(); });
+  </script>
+</body>
+</html>
